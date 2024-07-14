@@ -32,9 +32,9 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = get_openapi(
-        title="LEWAS-Chabot API",
+        title="Teaching Asssistant",
         version="1.0.0",
-        description="API for the LEWAS Chatbot project",
+        description="API for the Teaching Assistant application",
         routes=app.routes,
     )
     openapi_schema["components"]["securitySchemes"] = {

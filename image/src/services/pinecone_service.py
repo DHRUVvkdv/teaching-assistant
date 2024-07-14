@@ -25,7 +25,7 @@ FILE_ID_SERVICE_URL = "http://host.docker.internal:8001"
 
 
 dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table("lewas-chatbot-processed-files")
+table = dynamodb.Table("teaching-assistant-tavily-processed-files")
 
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:

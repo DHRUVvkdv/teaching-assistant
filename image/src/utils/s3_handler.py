@@ -2,7 +2,7 @@ import boto3
 import os
 from io import BytesIO
 
-S3_BUCKET = os.environ.get("S3_BUCKET", "lewas-chatbot")
+S3_BUCKET = os.environ.get("S3_BUCKET", "teaching-assistant-tavily")
 PDF_PREFIX = "data/pdfs/"
 
 s3 = boto3.client("s3")
