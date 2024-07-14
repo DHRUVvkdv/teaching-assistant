@@ -1,3 +1,8 @@
+# Run
+
+docker build -t ta_app .
+docker run --rm -p 8000:8000 --add-host=host.docker.internal:host-gateway --entrypoint python --env-file .env ta_app main.py
+
 # teaching-assistant
 
 A RAG (Retrieval-Augmented Generation) application using Pinecone for vector storage and Tavily for web search
@@ -10,6 +15,10 @@ A RAG (Retrieval-Augmented Generation) application using Pinecone for vector sto
 # Potential:
 
 TranslationAgent: Translates the content to different languages.
+Ask user to choose from a template, one is MCQ, one is mixed, one is professor and internet answer with customised fonts.
+make the project to use cognito, and have each user limit of 15 or something.
+say in development stage and less queries right now
+store user queries and show
 
 # Project Enhancements:
 
@@ -26,6 +35,9 @@ FactCheckAgent: Verifies the accuracy of the information.
 # Hurdles:
 
 Installing dotenv had issues so downloaded python-dotenv
+
+#Ideas:
+Research Assistnat?
 
 # Project
 

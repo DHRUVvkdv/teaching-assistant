@@ -3,7 +3,6 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Query
 from utils.api_key_middleware import ApiKeyMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.openapi.docs import get_swagger_ui_html
 from mangum import Mangum
 from pydantic import BaseModel
 from models.query import QueryModel
@@ -21,9 +20,12 @@ from services.pinecone_service import (
 from utils.s3_handler import get_s3_buckets, list_pdfs_in_s3
 import logging
 from pinecone import PineconeException
+from tavily import TavilyClient
+from typing import Optional, List
 
 
 WORKER_LAMBDA_NAME = os.environ.get("WORKER_LAMBDA_NAME", None)
+tavily_client = TavilyClient(api_key=os.environ.get("TAVILY_API_KEY", None))
 
 app = FastAPI()
 
@@ -186,6 +188,83 @@ async def update_drive_link_endpoint(
         logging.error(f"Unexpected error: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Error updating Google Drive link: {str(e)}"
+        )
+
+
+@app.post("/tavily_search")
+async def tavily_search(
+    query: str = Query(..., description="Search query"),
+    search_depth: Optional[str] = Query(
+        "basic", description="Search depth: 'basic' or 'advanced'"
+    ),
+    max_results: Optional[int] = Query(
+        5, description="Maximum number of results to return"
+    ),
+    include_images: Optional[bool] = Query(False, description="Include related images"),
+    include_answer: Optional[bool] = Query(
+        False, description="Include a short answer to the query"
+    ),
+    include_raw_content: Optional[bool] = Query(
+        False, description="Include raw HTML content of results"
+    ),
+    include_domains: Optional[List[str]] = Query(
+        None, description="Domains to include in search"
+    ),
+    exclude_domains: Optional[List[str]] = Query(
+        None, description="Domains to exclude from search"
+    ),
+):
+    try:
+        # Make a call to Tavily API
+        response = tavily_client.search(
+            query=query,
+            search_depth=search_depth,
+            max_results=max_results,
+            include_images=include_images,
+            include_answer=include_answer,
+            include_raw_content=include_raw_content,
+            include_domains=include_domains,
+            exclude_domains=exclude_domains,
+        )
+        return {"status": "success", "query": query, "results": response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in Tavily search: {str(e)}")
+
+
+@app.post("/tavily_search_context")
+async def tavily_search_context(
+    query: str = Query(..., description="Search query"),
+    search_depth: Optional[str] = Query(
+        "basic", description="Search depth: 'basic' or 'advanced'"
+    ),
+    max_tokens: Optional[int] = Query(
+        4000, description="Maximum number of tokens in the response"
+    ),
+):
+    try:
+        context = tavily_client.get_search_context(
+            query=query, search_depth=search_depth, max_tokens=max_tokens
+        )
+        return {"status": "success", "query": query, "context": context}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error in Tavily search context: {str(e)}"
+        )
+
+
+@app.post("/tavily_qna_search")
+async def tavily_qna_search(
+    query: str = Query(..., description="Question to answer"),
+    search_depth: Optional[str] = Query(
+        "advanced", description="Search depth: 'basic' or 'advanced'"
+    ),
+):
+    try:
+        answer = tavily_client.qna_search(query=query, search_depth=search_depth)
+        return {"status": "success", "query": query, "answer": answer}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error in Tavily QnA search: {str(e)}"
         )
 
 

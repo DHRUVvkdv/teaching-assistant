@@ -7,3 +7,4 @@ langchain-aws==0.1.6
 PyPDF2
 pinecone-client
 python-dotenv
+tavily-python
