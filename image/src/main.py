@@ -7,10 +7,8 @@ from mangum import Mangum
 from pydantic import BaseModel
 from models.query import QueryModel
 from services.pinecone_service import (
-    initialize_pinecone,
     create_embeddings,
     query_pinecone,
-    process_resume_pdf,
     process_all_pdfs,
     list_processed_files,
     get_google_drive_link_pdf,
@@ -22,10 +20,21 @@ import logging
 from pinecone import PineconeException
 from tavily import TavilyClient
 from typing import Optional, List
+from utils.config import (
+    TEACHER_CONFIG,
+    PINECONE_API_KEY,
+    BEDROCK_MODEL_ID,
+    FILE_ID_SERVICE_URL,
+    TAVILY_API_KEY,
+    PROCESSED_FILES_TABLE,
+    QUERIES_TABLE,
+    PROMPT_TEMPLATE,
+)
 
 
 WORKER_LAMBDA_NAME = os.environ.get("WORKER_LAMBDA_NAME", None)
-tavily_client = TavilyClient(api_key=os.environ.get("TAVILY_API_KEY", None))
+# tavily_client = TavilyClient(api_key=os.environ.get("TAVILY_API_KEY", None))
+tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
 
 app = FastAPI()
 
@@ -76,37 +85,30 @@ def get_s3_endpoint():
     return get_s3_buckets()
 
 
-@app.post("/initialize_pinecone")
-def initialize_pinecone_endpoint():
-    return initialize_pinecone()
-
-
 @app.post("/create_embeddings")
-def create_embeddings_endpoint(request: EmbeddingRequest):
-    return create_embeddings(request.sentences)
-
-
-@app.post("/process_resume_pdf")
-def process_resume_pdf_endpoint():
-    return process_resume_pdf()
+def create_embeddings_endpoint(request: EmbeddingRequest, teacher_name: str):
+    return create_embeddings(request.sentences, teacher_name)
 
 
 @app.post("/process_all_pdfs")
-def process_all_pdfs_endpoint():
-    return process_all_pdfs()
+def process_all_pdfs_endpoint(teacher_name: str):
+    return process_all_pdfs(teacher_name)
 
 
 @app.post("/query_documents")
-def query_documents_endpoint(request: SubmitQueryRequest) -> QueryModel:
-    return query_pinecone(request.query_text)
+def query_documents_endpoint(
+    request: SubmitQueryRequest, teacher_name: str
+) -> QueryModel:
+    return query_pinecone(request.query_text, teacher_name)
 
 
 @app.get("/list_processed_files")
-def list_processed_files_endpoint():
+def list_processed_files_endpoint(teacher_name: str):
     try:
-        processed_files = list_processed_files()
+        processed_files = list_processed_files(teacher_name)
         return {
             "status": "success",
+            "teacher": teacher_name,
             "processed_files": processed_files,
             "total_processed_files": len(processed_files),
         }
@@ -115,9 +117,12 @@ def list_processed_files_endpoint():
 
 
 @app.get("/list_pdfs")
-async def list_pdfs_endpoint():
+async def list_pdfs_endpoint(teacher_name: str):
     try:
-        pdfs = list_pdfs_in_s3()
+        config = TEACHER_CONFIG.get(teacher_name)
+        if not config:
+            raise ValueError(f"Error main, Invalid teacher name: {teacher_name}")
+        pdfs = list_pdfs_in_s3(teacher_name)
         return {"status": "success", "total_pdfs": len(pdfs), "pdfs": pdfs}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to list PDFs: {str(e)}")
@@ -146,15 +151,17 @@ async def test_drive_link(
 @app.post(
     "/update_missing_drive_links", operation_id="update_missing_drive_links_endpoint"
 )
-async def update_missing_drive_links_endpoint():
+async def update_missing_drive_links_endpoint(teacher_name: str):
     try:
-        total_updated = update_missing_drive_links()
+        total_updated = update_missing_drive_links(teacher_name)
         return {
             "status": "success",
-            "message": f"Updated {total_updated} vectors with missing Google Drive links",
+            "message": f"Updated {total_updated} vectors with missing Google Drive links for teacher {teacher_name}",
         }
     except Exception as e:
-        logging.error(f"Error updating missing Google Drive links: {str(e)}")
+        logging.error(
+            f"Error updating missing Google Drive links for teacher {teacher_name}: {str(e)}"
+        )
         raise HTTPException(
             status_code=500,
             detail=f"Error updating missing Google Drive links: {str(e)}",
@@ -165,21 +172,24 @@ async def update_missing_drive_links_endpoint():
 async def update_drive_link_endpoint(
     file_name: str = Query(..., description="Name of the PDF file"),
     drive_link: str = Query(..., description="Google Drive link for the file"),
+    teacher_name: str = Query(..., description="Name of the teacher"),
 ):
     try:
-        updated_count = update_drive_link_for_file(file_name, drive_link)
+        updated_count = update_drive_link_for_file(file_name, drive_link, teacher_name)
         if updated_count > 0:
             return {
                 "status": "success",
-                "message": f"Updated Google Drive link for {updated_count} vectors of {file_name}",
+                "message": f"Updated Google Drive link for {updated_count} vectors of {file_name} for teacher {teacher_name}",
                 "file_name": file_name,
                 "drive_link": drive_link,
+                "teacher_name": teacher_name,
             }
         else:
             return {
                 "status": "not_found",
-                "message": f"No vectors found for {file_name}",
+                "message": f"No vectors found for {file_name} for teacher {teacher_name}",
                 "file_name": file_name,
+                "teacher_name": teacher_name,
             }
     except PineconeException as e:
         logging.error(f"Pinecone exception: {str(e)}")

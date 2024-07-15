@@ -2,6 +2,8 @@ from typing import List
 import PyPDF2
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.schema.document import Document
+from utils.config import PDF_CHUNK_SIZE, PDF_CHUNK_OVERLAP
+import logging
 
 
 def process_pdf(pdf_file: bytes, filename: str) -> List[Document]:
@@ -15,25 +17,41 @@ def process_pdf(pdf_file: bytes, filename: str) -> List[Document]:
     Returns:
         List[Document]: A list of document chunks.
     """
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
+    try:
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
 
-    documents = [
-        Document(
-            page_content=page.extract_text(),
-            metadata={"page": page_num + 1, "source": filename},
+        documents = []
+        for page_num, page in enumerate(pdf_reader.pages):
+            try:
+                text = page.extract_text()
+                if text:  # Only create a Document if there's text content
+                    documents.append(
+                        Document(
+                            page_content=text,
+                            metadata={"page": page_num + 1, "source": filename},
+                        )
+                    )
+            except Exception as e:
+                logging.error(
+                    f"Error extracting text from page {page_num + 1} of {filename}: {str(e)}"
+                )
+
+        if not documents:
+            logging.warning(f"No text content extracted from {filename}")
+            return []
+
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=PDF_CHUNK_SIZE,
+            chunk_overlap=PDF_CHUNK_OVERLAP,
+            length_function=len,
+            is_separator_regex=False,
         )
-        for page_num, page in enumerate(pdf_reader.pages)
-    ]
+        chunks = text_splitter.split_documents(documents)
 
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=600,
-        chunk_overlap=120,
-        length_function=len,
-        is_separator_regex=False,
-    )
-    chunks = text_splitter.split_documents(documents)
-
-    return calculate_chunk_ids(chunks, filename)
+        return calculate_chunk_ids(chunks, filename)
+    except Exception as e:
+        logging.error(f"Error processing PDF {filename}: {str(e)}")
+        raise
 
 
 def calculate_chunk_ids(chunks: List[Document], filename: str) -> List[Document]:
@@ -47,22 +65,32 @@ def calculate_chunk_ids(chunks: List[Document], filename: str) -> List[Document]
     Returns:
         List[Document]: Updated list of document chunks with IDs.
     """
-    last_page_id = None
-    current_chunk_index = 0
+    try:
+        last_page_id = None
+        current_chunk_index = 0
 
-    for chunk in chunks:
-        page = chunk.metadata.get("page", 0)
-        current_page_id = f"{filename}:{page}"
+        for chunk in chunks:
+            page = chunk.metadata.get("page", 0)
+            if not isinstance(page, int):
+                logging.warning(
+                    f"Non-integer page value found in {filename}: {page}. Using 0."
+                )
+                page = 0
 
-        if current_page_id == last_page_id:
-            current_chunk_index += 1
-        else:
-            current_chunk_index = 0
+            current_page_id = f"{filename}:{page}"
 
-        chunk_id = f"{current_page_id}:{current_chunk_index}"
-        last_page_id = current_page_id
+            if current_page_id == last_page_id:
+                current_chunk_index += 1
+            else:
+                current_chunk_index = 0
 
-        chunk.metadata["id"] = chunk_id
-        chunk.metadata["source"] = filename
+            chunk_id = f"{current_page_id}:{current_chunk_index}"
+            last_page_id = current_page_id
 
-    return chunks
+            chunk.metadata["id"] = chunk_id
+            chunk.metadata["source"] = filename
+
+        return chunks
+    except Exception as e:
+        logging.error(f"Error calculating chunk IDs for {filename}: {str(e)}")
+        raise
