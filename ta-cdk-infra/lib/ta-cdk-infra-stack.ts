@@ -28,6 +28,10 @@ export class TaCdkInfraStack extends cdk.Stack {
     if (!apiKey) {
       throw new Error("API_KEY environment variable is not set");
     }
+    const tavilyApiKey = process.env.TAVILY_API_KEY;
+    if (!tavilyApiKey) {
+      throw new Error("TAVILY_API_KEY environment variable is not set");
+    }
 
     // Create a DynamoDB table to store the query data and results.
     const teachingAssistantTavilyQueryTable = new Table(this, "QueriesTable", {
@@ -58,6 +62,7 @@ export class TaCdkInfraStack extends cdk.Stack {
         API_KEY: apiKey,
         S3_BUCKET: 'teaching-assistant-tavily',  // Added S3_BUCKET environment variable
         PROCESSED_FILES_TABLE: processedFilesTable.tableName,  // Added PROCESSED_FILES_TABLE environment variable
+        TAVILY_API_KEY: tavilyApiKey,
       },
     });
 
