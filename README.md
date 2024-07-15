@@ -19,6 +19,8 @@ Ask user to choose from a template, one is MCQ, one is mixed, one is professor a
 make the project to use cognito, and have each user limit of 15 or something.
 say in development stage and less queries right now
 store user queries and show
+Learn more (having the sources)
+flashcards?
 
 # Project Enhancements:
 
@@ -38,6 +40,13 @@ Installing dotenv had issues so downloaded python-dotenv
 
 #Ideas:
 Research Assistnat?
+
+# UI Ideas:
+
+Combined View
+Side-by-Side Comparison
+Tabbed Interface
+Interactive Mind Map:
 
 # Project
 

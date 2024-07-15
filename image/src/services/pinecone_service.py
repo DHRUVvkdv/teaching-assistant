@@ -11,6 +11,7 @@ from utils.config import (
     FILE_ID_SERVICE_URL,
     PROMPT_TEMPLATE,
     BEDROCK_MODEL_ID,
+    COMBINED_PROMPT_TEMPLATE,
 )
 from langchain.prompts import ChatPromptTemplate
 from langchain_aws import ChatBedrock
@@ -430,3 +431,63 @@ def update_drive_link_for_file(file_name: str, drive_link: str, teacher_name: st
     except Exception as e:
         logging.error(f"Failed to update drive link for {file_name}: {str(e)}")
         raise
+
+
+def combined_query(query_text, teacher_name, tavily_client):
+    try:
+        query_id = uuid.uuid4().hex
+        create_time = int(time.time())
+
+        # Query Pinecone
+        pinecone_results = query_pinecone(query_text, teacher_name)
+
+        # Query Tavily
+        tavily_results = tavily_client.get_search_context(
+            query=query_text,
+            search_depth="advanced",
+            max_tokens=2000,  # Adjust as needed
+        )
+
+        # Prepare the combined prompt
+        prompt_template = ChatPromptTemplate.from_template(COMBINED_PROMPT_TEMPLATE)
+        prompt = prompt_template.format(
+            professor_context=pinecone_results.answer_text,
+            professor_sources="\n".join(pinecone_results.sources),
+            web_context=tavily_results,
+            question=query_text,
+        )
+
+        # Get response from LLM
+        model = ChatBedrock(model_id=BEDROCK_MODEL_ID)
+        response = model.invoke(prompt)
+        combined_response = response.content
+
+        # Prepare the result
+        result = {
+            "query_id": query_id,
+            "create_time": create_time,
+            "query_text": query_text,
+            "professor_answer": pinecone_results.answer_text,
+            "professor_sources": pinecone_results.sources,
+            "web_context": tavily_results,
+            "combined_response": combined_response,
+            "teacher": teacher_name,
+            "status": "completed",
+        }
+
+        # Add query info to DynamoDB
+        queriesTable.put_item(Item=result)
+
+        logging.info(
+            f"Combined query processed and added to DynamoDB: {query_id} for teacher {teacher_name}"
+        )
+
+        return result
+    except Exception as e:
+        logging.error(
+            f"Failed to process combined query for teacher {teacher_name}: {str(e)}"
+        )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process combined query: {str(e)}",
+        )

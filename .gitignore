@@ -1,3 +1,4 @@
+working.txt
 lib/*
 !lib/ta-cdk-infra-stack.ts
 # Byte-compiled / optimized / DLL files

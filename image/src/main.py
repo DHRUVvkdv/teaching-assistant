@@ -14,6 +14,7 @@ from services.pinecone_service import (
     get_google_drive_link_pdf,
     update_missing_drive_links,
     update_drive_link_for_file,
+    combined_query,
 )
 from utils.s3_handler import get_s3_buckets, list_pdfs_in_s3
 import logging
@@ -30,6 +31,11 @@ from utils.config import (
     QUERIES_TABLE,
     PROMPT_TEMPLATE,
 )
+
+
+class CombinedQueryRequest(BaseModel):
+    query_text: str
+    teacher_name: str
 
 
 WORKER_LAMBDA_NAME = os.environ.get("WORKER_LAMBDA_NAME", None)
@@ -276,6 +282,17 @@ async def tavily_qna_search(
         raise HTTPException(
             status_code=500, detail=f"Error in Tavily QnA search: {str(e)}"
         )
+
+
+@app.post("/combined_query")
+async def combined_query_endpoint(request: CombinedQueryRequest):
+    try:
+        # Process the query
+        result = combined_query(request.query_text, request.teacher_name, tavily_client)
+
+        return {"status": "success", "query_id": result["query_id"], "result": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 if __name__ == "__main__":

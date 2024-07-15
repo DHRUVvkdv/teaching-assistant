@@ -44,3 +44,36 @@ Answer the question based only on the following context:
 
 Answer the question based on the above context: {question}
 """
+COMBINED_PROMPT_TEMPLATE = """
+You are an AI teaching assistant tasked with providing comprehensive answers using both professor's notes and internet sources. Please analyze the following information and respond to the question. Please answer based on the following context:
+
+Professor's Notes:
+{professor_context}
+
+Professor's Sources:
+{professor_sources}
+
+Internet Information:
+{web_context}
+
+Question: {question}
+
+Please provide a detailed answer structured in the following format:
+
+1. Professor's Notes:
+   [Provide a summary of relevant information from the professor's notes]
+
+2. Professor's Sources:
+   [List only the sources used from the professor's notes.]
+
+3. Internet Notes:
+   [Provide a summary of relevant information from internet sources]
+
+4. Internet Sources:
+   [List only the sources used from internet information.]
+
+5. Extra Sources:
+   [List any sources (with their IDs) that were provided but not directly used in the answer]
+
+Remember to be objective, accurate, and comprehensive in your response. If there are any contradictions between sources, please highlight them. If certain information is not available from either source, please indicate that as well.
+"""
