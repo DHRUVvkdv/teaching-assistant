@@ -80,68 +80,16 @@ def create_embeddings(sentences, teacher_name):
 
 def query_pinecone(query_text, teacher_name):
     try:
-        config = TEACHER_CONFIG.get(teacher_name)
-        if not config:
-            raise ValueError(f"Invalid teacher name: {teacher_name}")
-
-        index_name = config["index_name"]
-        top_k = config["top_k"]
-
-        query_id = uuid.uuid4().hex
-        create_time = int(time.time())
-
-        index = pc.Index(index_name)
-        embedding_function = get_embedding_function()
-        query_embedding = embedding_function.embed_query(query_text)
-
-        results = index.query(
-            vector=query_embedding, top_k=top_k, include_metadata=True
-        )
-
-        context_text = "\n\n---\n\n".join(
-            [match.metadata["text"] for match in results.matches]
-        )
-
+        vector_db_results = query_vector_db(query_text, teacher_name)
         prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-        prompt = prompt_template.format(context=context_text, question=query_text)
-
-        model = ChatBedrock(model_id=BEDROCK_MODEL_ID)
-        response = model.invoke(prompt)
-        response_text = response.content
-
-        sources = [
-            f"{match.metadata['source']} (Page {match.metadata.get('page', 'N/A')}) - {match.metadata.get('google_drive_link', 'No link available')}"
-            for match in results.matches
-        ]
-
-        new_query = QueryModel(
-            query_id=query_id,
-            create_time=create_time,
-            query_text=query_text,
-            answer_text=response_text,
-            sources=sources,
-            is_complete=True,
+        result = process_query(
+            query_text,
+            teacher_name,
+            vector_db_results["context_text"],
+            prompt_template,
+            {"sources": vector_db_results["sources"]},
         )
-
-        # Add query info to DynamoDB
-        queriesTable.put_item(
-            Item={
-                "query_id": query_id,
-                "create_time": create_time,
-                "query_text": query_text,
-                "answer_text": response_text,
-                "sources": sources,
-                "is_complete": True,
-                "pinecone_index": index_name,
-                "teacher": teacher_name,
-            }
-        )
-
-        logging.info(
-            f"Query processed and added to DynamoDB: {query_id} for teacher {teacher_name}"
-        )
-
-        return new_query
+        return result
     except Exception as e:
         logging.error(
             f"Failed to process query or add to DynamoDB for teacher {teacher_name}: {str(e)}"
@@ -435,51 +383,40 @@ def update_drive_link_for_file(file_name: str, drive_link: str, teacher_name: st
 
 def combined_query(query_text, teacher_name, tavily_client):
     try:
-        query_id = uuid.uuid4().hex
-        create_time = int(time.time())
+        vector_db_results = query_vector_db(query_text, teacher_name)
 
-        # Query Pinecone
-        pinecone_results = query_pinecone(query_text, teacher_name)
-
-        # Query Tavily
         tavily_results = tavily_client.get_search_context(
             query=query_text,
             search_depth="advanced",
-            max_tokens=2000,  # Adjust as needed
+            max_tokens=2000,
         )
 
-        # Prepare the combined prompt
         prompt_template = ChatPromptTemplate.from_template(COMBINED_PROMPT_TEMPLATE)
-        prompt = prompt_template.format(
-            professor_context=pinecone_results.answer_text,
-            professor_sources="\n".join(pinecone_results.sources),
-            web_context=tavily_results,
-            question=query_text,
+
+        result = process_query(
+            query_text,
+            teacher_name,
+            vector_db_results["context_text"],
+            prompt_template,
+            {
+                "professor_context": vector_db_results["context_text"],
+                "professor_sources": "\n".join(vector_db_results["sources"]),
+                "web_context": tavily_results,
+            },
         )
 
-        # Get response from LLM
-        model = ChatBedrock(model_id=BEDROCK_MODEL_ID)
-        response = model.invoke(prompt)
-        combined_response = response.content
-
-        # Prepare the result
-        result = {
-            "query_id": query_id,
-            "create_time": create_time,
-            "query_text": query_text,
-            "professor_answer": pinecone_results.answer_text,
-            "professor_sources": pinecone_results.sources,
-            "web_context": tavily_results,
-            "combined_response": combined_response,
-            "teacher": teacher_name,
-            "status": "completed",
-        }
-
-        # Add query info to DynamoDB
-        queriesTable.put_item(Item=result)
+        # Add additional information specific to combined query - TESTING
+        result.update(
+            {
+                "professor_context": vector_db_results["context_text"],
+                "professor_sources": vector_db_results["sources"],
+                "web_context": tavily_results,
+                "combined_response": result["answer_text"],
+            }
+        )
 
         logging.info(
-            f"Combined query processed and added to DynamoDB: {query_id} for teacher {teacher_name}"
+            f"Combined query processed and added to DynamoDB: {result['query_id']} for teacher {teacher_name}"
         )
 
         return result
@@ -490,4 +427,79 @@ def combined_query(query_text, teacher_name, tavily_client):
         raise HTTPException(
             status_code=500,
             detail=f"Failed to process combined query: {str(e)}",
+        )
+
+
+def process_query(
+    query_text, teacher_name, context, prompt_template, additional_params=None
+):
+    query_id = uuid.uuid4().hex
+    create_time = int(time.time())
+
+    prompt_params = {"context": context, "question": query_text}
+    if additional_params:
+        prompt_params.update(additional_params)
+
+    prompt = prompt_template.format(**prompt_params)
+
+    model = ChatBedrock(model_id=BEDROCK_MODEL_ID)
+    response = model.invoke(prompt)
+    response_text = response.content
+
+    result = {
+        "query_id": query_id,
+        "create_time": create_time,
+        "query_text": query_text,
+        "answer_text": response_text,
+        "is_complete": True,
+        "pinecone_index": TEACHER_CONFIG[teacher_name]["index_name"],
+        "teacher": teacher_name,
+        "prompt": prompt,
+    }
+
+    # Add query info to DynamoDB
+    queriesTable.put_item(Item=result)
+
+    logging.info(
+        f"Query processed and added to DynamoDB: {query_id} for teacher {teacher_name}"
+    )
+
+    return result
+
+
+def query_vector_db(query_text, teacher_name):
+    try:
+        config = TEACHER_CONFIG.get(teacher_name)
+        if not config:
+            raise ValueError(f"Invalid teacher name: {teacher_name}")
+
+        index_name = config["index_name"]
+        top_k = config["top_k"]
+
+        index = pc.Index(index_name)
+        embedding_function = get_embedding_function()
+        query_embedding = embedding_function.embed_query(query_text)
+
+        results = index.query(
+            vector=query_embedding, top_k=top_k, include_metadata=True
+        )
+
+        context_text = "\n\n---\n\n".join(
+            [match.metadata["text"] for match in results.matches]
+        )
+
+        sources = [
+            f"{match.metadata['source']} (Page {match.metadata.get('page', 'N/A')}) - {match.metadata.get('google_drive_link', 'No link available')}"
+            for match in results.matches
+        ]
+
+        return {
+            "context_text": context_text,
+            "sources": sources,
+        }
+    except Exception as e:
+        logging.error(f"Failed to query vector database: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to query vector database: {str(e)}",
         )

@@ -39,7 +39,7 @@ FactCheckAgent: Verifies the accuracy of the information.
 Installing dotenv had issues so downloaded python-dotenv
 
 #Ideas:
-Research Assistnat?
+Research Assistant?
 
 # UI Ideas:
 
