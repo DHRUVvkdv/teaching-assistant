@@ -54,7 +54,7 @@ export class TaCdkInfraStack extends cdk.Stack {
     const apiFunction = new DockerImageFunction(this, "ApiFunc", {
       code: apiImageCode,
       memorySize: 256,
-      timeout: cdk.Duration.seconds(30),
+      timeout: cdk.Duration.seconds(60),
       architecture: Architecture.ARM_64,
       environment: {
         TABLE_NAME: teachingAssistantTavilyQueryTable.tableName,
