@@ -2,24 +2,14 @@
 
 import logging
 from fastapi import HTTPException
-from utils.config import TEACHER_CONFIG
+from utils.config import TEACHER_CONFIG, PINECONE_API_KEY
 from utils.embeddings import get_embedding_function
 from pinecone import Pinecone
-from utils.config import (
-    TEACHER_CONFIG,
-    PINECONE_API_KEY,
-    PROCESSED_FILES_TABLE,
-    QUERIES_TABLE,
-    FILE_ID_SERVICE_URL,
-    PROMPT_TEMPLATE,
-    BEDROCK_MODEL_ID,
-    COMBINED_PROMPT_TEMPLATE,
-)
 
 pc = Pinecone(api_key=PINECONE_API_KEY)
 
 
-def query_vector_db(query_text, teacher_name):
+async def query_vector_db(query_text, teacher_name):
     try:
         config = TEACHER_CONFIG.get(teacher_name)
         if not config:

@@ -45,7 +45,7 @@ Answer the question based only on the following context:
 Answer the question based on the above context: {question}
 """
 COMBINED_PROMPT_TEMPLATE = """
-You are an AI teaching assistant tasked with providing comprehensive answers using both professor's notes and internet sources. Please analyze the following information and respond to the question. Please answer based on the following context:
+You are an AI teaching assistant tasked with providing comprehensive answers using both professor's notes and internet sources. Please analyze the following information and respond to the question. Please answer based on the following context, dont use any external information.:
 
 Professor's Notes:
 {professor_context}
@@ -58,13 +58,13 @@ Internet Information:
 
 Question: {question}
 
-Please provide a detailed answer structured in the following format:
+Please provide a detailed answer structured in the following format, dont give any external information apart from the headings:
 
 1. Professor's Notes:
    [Provide a summary of relevant information from the professor's notes]
 
 2. Professor's Sources:
-   [List only the sources used from the professor's notes.]
+   [List only the sources and the links used from the professor's notes.]
 
 3. Internet Notes:
    [Provide a summary of relevant information from internet sources]

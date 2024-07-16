@@ -9,3 +9,4 @@ pinecone-client
 python-dotenv
 tavily-python
 langgraph
+deep_translator

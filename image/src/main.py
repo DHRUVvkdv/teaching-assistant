@@ -38,6 +38,7 @@ from utils.config import (
 class CombinedQueryRequest(BaseModel):
     query_text: str
     teacher_name: str
+    target_language: Optional[str] = None
 
 
 WORKER_LAMBDA_NAME = os.environ.get("WORKER_LAMBDA_NAME", None)
@@ -301,8 +302,10 @@ async def tavily_qna_search(
 @app.post("/combined_query")
 async def process_combined_query(request: CombinedQueryRequest):
     try:
-        result = multi_agent_query(request.query_text, request.teacher_name)
-        return result
+        result = await multi_agent_query(
+            request.query_text, request.teacher_name, request.target_language
+        )
+        return {"status": "success", "result": result}
     except Exception as e:
         logging.error(f"Error processing combined query: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
