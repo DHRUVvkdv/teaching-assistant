@@ -16,6 +16,8 @@ from services.pinecone_service import (
     update_drive_link_for_file,
     combined_query,
 )
+from workflow import multi_agent_query
+
 from utils.s3_handler import get_s3_buckets, list_pdfs_in_s3
 import logging
 from pinecone import PineconeException
@@ -284,14 +286,25 @@ async def tavily_qna_search(
         )
 
 
-@app.post("/combined_query")
-async def combined_query_endpoint(request: CombinedQueryRequest):
-    try:
-        # Process the query
-        result = combined_query(request.query_text, request.teacher_name, tavily_client)
+# Commenting out for now, as it's being tested by the multi-agent system
+# @app.post("/combined_query")
+# async def combined_query_endpoint(request: CombinedQueryRequest):
+#     try:
+#         # Process the query
+#         result = combined_query(request.query_text, request.teacher_name, tavily_client)
 
-        return {"status": "success", "query_id": result["query_id"], "result": result}
+#         return {"status": "success", "query_id": result["query_id"], "result": result}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/combined_query")
+async def process_combined_query(request: CombinedQueryRequest):
+    try:
+        result = multi_agent_query(request.query_text, request.teacher_name)
+        return result
     except Exception as e:
+        logging.error(f"Error processing combined query: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

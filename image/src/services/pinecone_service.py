@@ -25,6 +25,12 @@ from botocore.exceptions import ClientError
 import requests
 from pinecone import PineconeException
 
+from utils.vector_db_utils import query_vector_db
+from utils.query_processing import process_query
+from agents.query_processing_agent import query_processing_agent
+from agents.vector_db_agent import vector_db_agent
+from agents.result_processing_agent import result_processing_agent
+
 
 dynamodb = boto3.resource("dynamodb")
 processedFilesTable = dynamodb.Table(PROCESSED_FILES_TABLE)

@@ -8,3 +8,4 @@ PyPDF2
 pinecone-client
 python-dotenv
 tavily-python
+langgraph
