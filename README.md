@@ -7,6 +7,10 @@ docker run --rm -p 8000:8000 --add-host=host.docker.internal:host-gateway --entr
 
 A RAG (Retrieval-Augmented Generation) application using Pinecone for vector storage and Tavily for web search
 
+# TO-DO:
+
+change context for lab
+
 # Pinecone vector DB
 
 - Subject Indexing:
@@ -102,3 +106,60 @@ To provide a scalable, cloud-based solution that can be adapted to various subje
 
 Unique Value Proposition:
 This teaching assistant goes beyond traditional Q&A systems by offering a blend of curated, professor-specific insights and comprehensive web-sourced information. It preserves the unique value of a professor's perspective while ensuring students have access to the most current and detailed information available.
+
+## More about project
+
+Project Summary: Multi-Agent Educational Query System
+Overview:
+This project is a sophisticated multi-agent system designed to provide comprehensive answers to educational queries. It combines information from a professor's notes (stored in a vector database) with up-to-date web search results. The system processes queries, performs parallel searches, synthesizes information, and can translate responses to different languages.
+Key Components:
+
+FastAPI Backend: Handles HTTP requests and manages the overall workflow.
+LangGraph: Orchestrates the multi-agent workflow.
+Pinecone: Vector database for storing and querying professor's notes.
+Tavily: Web search API for retrieving current information.
+AWS Bedrock: Large Language Model (LLM) for generating responses.
+Deep Translator: For translating responses to different languages.
+
+Technical Details:
+
+Agent Structure:
+
+Query Processing Agent: Prepares the user's query for processing.
+Vector DB Agent: Queries the Pinecone database for relevant professor's notes.
+Web Search Agent: Performs a web search using Tavily API.
+Result Processing Agent: Synthesizes information and generates a response using AWS Bedrock.
+Translator Agent: Translates the final response if needed.
+
+Workflow:
+
+The system uses LangGraph to create a directed graph of agent interactions.
+Parallel execution is implemented for Vector DB and Web Search agents.
+
+State Management:
+
+A shared AgentState object is passed between agents, containing all necessary information.
+
+Asynchronous Operations:
+
+Utilizes Python's asyncio for concurrent operations, especially in parallel searches.
+
+Error Handling and Logging:
+
+Comprehensive error handling and logging are implemented throughout the system.
+
+Translation:
+
+Uses Deep Translator for robust translation capabilities.
+
+Configuration:
+
+Utilizes environment variables and configuration files for flexible deployment.
+
+Diagrams:
+
+![Alt text](image.png)
+![Alt text](image-1.png)
+![Alt text](image-2.png)
+![Alt text](image-3.png)
+![Alt text](image-4.png)

@@ -7,14 +7,9 @@ from agents.query_processing_agent import query_processing_agent
 from agents.vector_db_agent import vector_db_agent
 from agents.web_search_agent import web_search_agent
 from agents.result_processing_agent import result_processing_agent
+from agents.response_formatting_agent import response_formatting_agent
 from agents.translator_agent import translator_agent
 from typing import Optional, Tuple, Dict, Any, TypedDict
-
-
-# Define a TypedDict for the parallel search results
-class ParallelSearchResults(TypedDict):
-    vector_db: Dict[str, Any]
-    web_search: Dict[str, Any]
 
 
 def create_workflow():
@@ -24,12 +19,14 @@ def create_workflow():
     workflow.add_node("query_processing", query_processing_agent)
     workflow.add_node("parallel_search", parallel_search)
     workflow.add_node("result_processing", result_processing_agent)
+    workflow.add_node("response_formatting", response_formatting_agent)
     workflow.add_node("translator", translator_agent)
 
     # Set up edges
     workflow.add_edge("query_processing", "parallel_search")
     workflow.add_edge("parallel_search", "result_processing")
-    workflow.add_edge("result_processing", "translator")
+    workflow.add_edge("result_processing", "response_formatting")
+    workflow.add_edge("response_formatting", "translator")
 
     # Set entry and finish points
     workflow.set_entry_point("query_processing")
