@@ -1,3 +1,4 @@
+personalREADME.md
 working.txt
 lib/*
 !lib/ta-cdk-infra-stack.ts

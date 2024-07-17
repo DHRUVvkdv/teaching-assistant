@@ -1,229 +1,169 @@
-# Run
+# AI-Enhanced Teaching Assistant
 
-docker build -t ta_app .
-docker run --rm -p 8000:8000 --add-host=host.docker.internal:host-gateway --entrypoint python --env-file .env ta_app main.py
+## Project Overview and Goals
 
-# teaching-assistant
+This project implements an advanced AI-powered teaching assistant that combines professor-specific knowledge with real-time web information to provide comprehensive, accurate, and personalized responses to student queries. The system leverages a team of AI agents working collaboratively to enhance the learning experience across various subjects.
 
-A RAG (Retrieval-Augmented Generation) application using Pinecone for vector storage and Tavily for web search
+### Goals
 
-# TO-DO:
+1. Integrate professor-specific knowledge with up-to-date web information.
+2. Provide personalized and comprehensive responses to student queries.
+3. Enhance student learning through interactive and adaptive content presentation.
+4. Demonstrate the effective use of LangGraph and Tavily API in a multi-agent system.
 
-professor UI
-show previous questions,
-instead of interent say addiotnal sources,
-random questions,
-generate more random questions,
-further reading,
+## Features
+
+- **Multi-source Integration:** Combines professor's notes and web information.
+- **Teacher-specific Knowledge Bases:** Custom knowledge bases for each teacher.
+- **Dynamic Content Processing:** Processes PDF documents dynamically.
+- **Intelligent Query Processing:** Uses embeddings and language models.
+- **Structured Response Generation:** Provides clear source attribution.
+- **Interactive Learning Formats:** Supports MCQs, case studies, etc.
+- **Adaptive Presentation Styles:** Adjusts to user preferences.
+- **Asynchronous Query Processing:** Provides status updates.
+- **Multi-language Support:** Includes dynamic translation.
+
+## Architecture
+
+The project uses a multi-agent system architecture:
+
+1. **Query Processing Agent:** Prepares and reformulates the user's query.
+2. **Vector DB Agent:** Searches the Pinecone database for relevant notes.
+3. **Web Search Agent:** Performs web searches using the Tavily API.
+4. **Result Processing Agent:** Synthesizes information from vector DB and web search.
+5. **Response Formatting Agent:** Structures the response in a consistent format.
+6. **Translator Agent:** Handles translation of the final response.
 
-change context for lab
-Implement a feedback loop where the system learns from user interactions
-store user interaction
+The workflow of these agents is orchestrated using the LangGraph framework.
+
+## Technologies Used
+
+- **FastAPI:** Web framework.
+- **Pinecone:** Vector storage and similarity search.
+- **Tavily API:** Web search.
+- **LangGraph:** Agent workflow orchestration.
+- **Amazon Bedrock:** Language model inference.
+- **AWS Services:** S3, Lambda, DynamoDB for cloud infrastructure.
+- **PyPDF2:** PDF processing.
+- **Streamlit:** Frontend user interface.
 
-I am working on the project mentioned below, and have shared the structure of a similar project as well. I want to add agents to my project right now :
-
-1. Add agent that makes the UI as per the request of the user. I have added the image for the same from the different project. I want the following designs and accordingly I need different PROMPT_TEMPLATES for different teachers. Right now I have three teachers: drvinay, lewas, historyoftech. whenver you select one teacher their database is queried. Now I have a COMBINED_PROMPT_TEMPLATE = """
-   You are an AI teaching assistant tasked with providing comprehensive answers using both professor's notes and internet sources. Please analyze the following information and respond to the question. Please answer based on the following context, dont use any external information.:
-
-Professor's Notes:
-{professor_context}
-
-Professor's Sources:
-{professor_sources}
-
-Internet Information:
-{web_context}
-
-Question: {question}
-
-Please provide a detailed answer structured in the following format, dont give any external information apart from the headings:
-
-1. Professor's Notes:
-   [Provide a summary of relevant information from the professor's notes]
-
-2. Professor's Sources:
-   [List only the sources and the links used from the professor's notes.]
-
-3. Internet Notes:
-   [Provide a summary of relevant information from internet sources]
-
-4. Internet Sources:
-   [List only the sources used from internet information.]
-
-5. Extra Sources:
-   [List any sources (with their IDs) that were provided but not directly used in the answer]
-
-Remember to be objective, accurate, and comprehensive in your response. If there are any contradictions between sources, please highlight them. If certain information is not available from either source, please indicate that as well.
-"""
-but I want to make for each teacher customised prompt (jsut changing the text). Also for the UI I am thinking:
-
-1. Professor and web both data but seperate
-2. Professor and web both data summarised into one
-3. jsut professor data
-4. just web data
-5. ask the llm give some MCQ questions with options, the correct answers will be given at the bottom,
-
-lets talk about implemeting this, dont give data if you dont know, ask me and i will provide with more info.
-
-Agents GPT-Newspaper(other similar software has) has:
-
-1. The Search Agent: Our scout, scouring the internet for the latest and most pertinent news.
-2. The Curator Agent: The discerning connoisseur, filtering and selecting news based on the user’s preferences and interests.
-3. The Writer Agent: The team’s wordsmith, crafting engaging, reader-friendly articles.
-4. The Critique Agent: The provider of constructive feedback, ensuring the article’s quality before it gets the green light.
-5. The Designer Agent: Our artist, arranging and designing the articles for a visually delightful reading experience.
-6. The Editor Agent: The conductor, constructing the newspaper based on the crafted articles.
-7. The Publisher Agent: The final touch, publishing the finished product to the frontend or the desired service.
-
-# Pinecone vector DB
-
-- Subject Indexing:
-  -- Research Lab: Demonstrates the system's ability to handle specialized knowledge
-
-# Potential:
-
-TranslationAgent: Translates the content to different languages.
-Ask user to choose from a template, one is MCQ, one is mixed, one is professor and internet answer with customised fonts.
-make the project to use cognito, and have each user limit of 15 or something.
-say in development stage and less queries right now
-store user queries and show
-Learn more (having the sources)
-flashcards?
-
-# Project Enhancements:
-
-Create a user interface for easy interaction with the multi-agent system
-Implement a feedback loop where the system learns from user interactions
-Add a feature to update the Pinecone index with new information from Tavily searches
-
-# End Product:
-
-ImageGenerationAgent: Creates relevant images for the content.
-SummaryAgent: Provides a concise summary of the information.
-FactCheckAgent: Verifies the accuracy of the information.
-
-# Hurdles:
-
-Installing dotenv had issues so downloaded python-dotenv
-
-#Ideas:
-Research Assistant?
-
-# UI Ideas:
-
-Combined View
-Side-by-Side Comparison
-Tabbed Interface
-Interactive Mind Map:
-
-# Project
-
-Project Definition: An Advanced Teaching Assistant System with Personalized Knowledge Base and Web-Enhanced Responses
-Overview:
-This project involves the development of an advanced teaching assistant system that combines a professor's unique knowledge base with real-time web search capabilities. The system is designed to provide students with comprehensive, accurate, and personalized responses to their queries in the field of "History of Technology and Innovation."
-Key Components:
-
-Personalized Knowledge Base:
-
-It contains a professor's unique notes, perspectives, and insights on the history of technology and innovation.
-These notes are characterized by the professor's personal "signature" - their unique viewpoints, anecdotes, and specific focus areas within the broader subject.
-The knowledge base is stored in a Pinecone vector database for efficient retrieval.
-
-Web Search Integration:
-
-It utilizes the Tavily API to perform real-time web searches.
-The system supplements the professor's notes with up-to-date information, detailed explanations, and broader context from the internet.
-
-Query Processing:
-
-The system employs natural language processing to understand and interpret student queries.
-It matches queries against the personalized knowledge base and determines when additional web search is necessary.
-
-Response Generation:
-
-The assistant combines information from the professor's notes and web search results.
-It crafts coherent, informative responses that blend the professor's unique insights with comprehensive web-sourced information.
-
-AWS Infrastructure:
-
-The project leverages AWS CDK for infrastructure as code, ensuring scalable and maintainable cloud architecture.
-It utilizes AWS Lambda for serverless compute, handling query processing and response generation.
-The system employs DynamoDB for storing query history and processed file information.
-It uses S3 for storing any necessary static assets or large data files.
-
-Multi-Agent System:
-
-The project implements a system of specialized AI agents, each handling specific tasks in the query-response pipeline.
-Agents include: query understanding, knowledge base retrieval, web search, information synthesis, and response generation.
-
-User Interface:
-
-It provides a simple, intuitive interface for students to submit queries and receive responses.
-The interface may include features for saving or categorizing responses for future reference.
-
-Project Goals:
-
-To enhance student learning by providing access to both professor-specific knowledge and broader web-sourced information.
-To demonstrate the effective integration of personalized knowledge bases with real-time web search capabilities.
-To showcase the power of multi-agent AI systems in educational technology.
-To provide a scalable, cloud-based solution that can be adapted to various subjects and educational contexts.
-
-Unique Value Proposition:
-This teaching assistant goes beyond traditional Q&A systems by offering a blend of curated, professor-specific insights and comprehensive web-sourced information. It preserves the unique value of a professor's perspective while ensuring students have access to the most current and detailed information available.
-
-## More about project
-
-Project Summary: Multi-Agent Educational Query System
-Overview:
-This project is a sophisticated multi-agent system designed to provide comprehensive answers to educational queries. It combines information from a professor's notes (stored in a vector database) with up-to-date web search results. The system processes queries, performs parallel searches, synthesizes information, and can translate responses to different languages.
-Key Components:
-
-FastAPI Backend: Handles HTTP requests and manages the overall workflow.
-LangGraph: Orchestrates the multi-agent workflow.
-Pinecone: Vector database for storing and querying professor's notes.
-Tavily: Web search API for retrieving current information.
-AWS Bedrock: Large Language Model (LLM) for generating responses.
-Deep Translator: For translating responses to different languages.
-
-Technical Details:
-
-Agent Structure:
-
-Query Processing Agent: Prepares the user's query for processing.
-Vector DB Agent: Queries the Pinecone database for relevant professor's notes.
-Web Search Agent: Performs a web search using Tavily API.
-Result Processing Agent: Synthesizes information and generates a response using AWS Bedrock.
-Translator Agent: Translates the final response if needed.
-
-Workflow:
-
-The system uses LangGraph to create a directed graph of agent interactions.
-Parallel execution is implemented for Vector DB and Web Search agents.
-
-State Management:
-
-A shared AgentState object is passed between agents, containing all necessary information.
-
-Asynchronous Operations:
-
-Utilizes Python's asyncio for concurrent operations, especially in parallel searches.
-
-Error Handling and Logging:
-
-Comprehensive error handling and logging are implemented throughout the system.
-
-Translation:
-
-Uses Deep Translator for robust translation capabilities.
-
-Configuration:
-
-Utilizes environment variables and configuration files for flexible deployment.
-
-Diagrams:
-
-![Alt text](image.png)
-![Alt text](image-1.png)
-![Alt text](image-2.png)
-![Alt text](image-3.png)
-![Alt text](image-4.png)
+## Setup and Installation
+
+1.  Clone the repository:
+    ```sh
+    git clone https://github.com/yourusername/ai-teaching-assistant.git
+    cd ai-teaching-assistant
+    ```
+2.  Install dependencies:
+
+    ```pip install -r requirements.txt
+
+    ```
+
+3.  Set up environment variables:
+    Create a `.env` file in the root directory and add the following:
+
+    ```PINECONE_API_KEY=your_pinecone_api_key
+    TAVILY_API_KEY=your_tavily_api_key
+    AWS_ACCESS_KEY_ID=your_aws_access_key
+    AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+    ```
+
+4.  Initialize the Pinecone index:
+
+    ```sh
+    python scripts/initialize_pinecone.py
+    ```
+
+5.  Run the FastAPI server:
+    ```sh
+    uvicorn main:app --reload
+    ```
+6.  [Run the Streamlit frontend:](https://github.com/DHRUVvkdv/teaching-assistant-frontend)
+    ```sh
+    streamlit run streamlit_app.py
+    ```
+
+## Usage
+
+### API Endpoints
+
+- **POST /combined_query:** Submit a query for processing by the AI teaching assistant.
+- **GET /query_status/{query_id}:** Check the status of a submitted query.
+- **POST /process_all_pdfs:** Process and index all PDFs for a specific teacher.
+- **GET /list_processed_files:** List all processed files for a teacher.
+
+## Example Usage
+
+```python
+import requests
+
+API_BASE_URL = "http://your-api-base-url.com"
+API_KEY = "your_api_key_here"
+
+# Submit a query
+query_data = {
+    "query_text": "What is the law of conservation of energy?",
+    "teacher_name": "drvinay",
+    "target_language": "en"
+}
+headers = {
+    "API-Key": API_KEY,
+    "Content-Type": "application/json"
+}
+response = requests.post(f"{API_BASE_URL}/combined_query", json=query_data, headers=headers)
+query_id = response.json()["query_id"]
+
+# Check query status
+status_response = requests.get(f"{API_BASE_URL}/query_status/{query_id}", headers=headers)
+print(status_response.json())
+
+# Process all PDFs for a teacher
+process_data = {"teacher_name": "drvinay"}
+process_response = requests.post(f"{API_BASE_URL}/process_all_pdfs", json=process_data, headers=headers)
+print(process_response.json())
+
+# List processed files
+list_response = requests.get(f"{API_BASE_URL}/list_processed_files?teacher_name=drvinay", headers=headers)
+print(list_response.json())
+```
+
+## User Interface
+
+The Streamlit-based user interface provides the following features:
+
+- Customizable themes and fonts.
+- Dynamic, searchable language selection.
+- Options for different presentation styles.
+- MCQ generation based on query results.
+- Real-time, client-side translation of results.
+
+## Contributing
+
+We welcome contributions to the AI-Enhanced Teaching Assistant project. Please follow these steps to contribute:
+
+1. Fork the repository.
+2. Create a new branch:
+   ```sh
+   git checkout -b feature/AmazingFeature
+   ```
+3. Make your changes.
+4. Commit your changes.
+   ```sh
+   git commit -m 'Add some AmazingFeature'
+   ```
+5. Push to the branch:
+   ```sh
+   git push origin feature/AmazingFeature
+   ```
+6. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+
+## Acknowledgments
+
+- [Tavily API](https://tavily.com/) for providing powerful web search capabilities.
+- [LangGraph](https://github.com/langchain-ai/langgraph) framework for enabling the creation of complex AI agent workflows.
+- The open-source community for their invaluable contributions to the tools and libraries used in this project.
