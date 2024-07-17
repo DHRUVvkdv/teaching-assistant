@@ -1,51 +1,54 @@
 # AI-Enhanced Teaching Assistant
 
+## Project Live Link
+
+[Click here to view the live project](https://teachingassistant-dv.streamlit.app/)
+
 ## Project Overview and Goals
 
-This project implements an advanced AI-powered teaching assistant that combines professor-specific knowledge with real-time web information to provide comprehensive, accurate, and personalized responses to student queries. The system leverages a team of AI agents working collaboratively to enhance the learning experience across various subjects.
+This project implements an advanced AI-powered teaching assistant that combines knowledge from multiple professors with real-time web information to provide comprehensive, accurate, and personalized responses to student queries. The system leverages a team of AI agents working collaboratively to enhance the learning experience across various subjects and professors.
 
 ### Goals
 
-1. Integrate professor-specific knowledge with up-to-date web information.
+1. Integrate knowledge from multiple professors with up-to-date web information.
 2. Provide personalized and comprehensive responses to student queries.
 3. Enhance student learning through interactive and adaptive content presentation.
 4. Demonstrate the effective use of LangGraph and Tavily API in a multi-agent system.
 
-## Features
+## Key Features
 
-- **Multi-source Integration:** Combines professor's notes and web information.
-- **Teacher-specific Knowledge Bases:** Custom knowledge bases for each teacher.
-- **Dynamic Content Processing:** Processes PDF documents dynamically.
-- **Intelligent Query Processing:** Uses embeddings and language models.
-- **Structured Response Generation:** Provides clear source attribution.
-- **Interactive Learning Formats:** Supports MCQs, case studies, etc.
-- **Adaptive Presentation Styles:** Adjusts to user preferences.
-- **Asynchronous Query Processing:** Provides status updates.
-- **Multi-language Support:** Includes dynamic translation.
+- **Multi-Professor Support:** Students can select from multiple professors, accessing specialized knowledge bases for each.
+- **Web-Enhanced Responses:** Combines professor-specific knowledge with current web information for comprehensive answers.
+- **Personalized Learning:** Tailors responses based on the selected professor and student preferences.
+- **Multi-source Integration:** Merges professors' notes and web information seamlessly.
+- **Intelligent Query Processing:** Utilizes embeddings and language models for accurate understanding.
+- **Interactive Learning Formats:** Supports MCQs, case studies, and various presentation styles.
+- **Multi-language Support:** Includes dynamic translation for global accessibility.
 
 ## Architecture
 
 The project uses a multi-agent system architecture:
 
 1. **Query Processing Agent:** Prepares and reformulates the user's query.
-2. **Vector DB Agent:** Searches the Pinecone database for relevant notes.
-3. **Web Search Agent:** Performs web searches using the Tavily API.
+2. **Vector DB Agent:** Searches the Pinecone database for relevant notes from the selected professor.
+3. **Web Search Agent:** Performs web searches using the Tavily API to supplement professor knowledge.
 4. **Result Processing Agent:** Synthesizes information from vector DB and web search.
 5. **Response Formatting Agent:** Structures the response in a consistent format.
-6. **Translator Agent:** Handles translation of the final response.
+6. **Translator Agent:** Handles translation of the final response if needed.
 
 The workflow of these agents is orchestrated using the LangGraph framework.
+![Workflow](image/src/images/workflow.png)
 
 ## Technologies Used
 
-- **FastAPI:** Web framework.
-- **Pinecone:** Vector storage and similarity search.
-- **Tavily API:** Web search.
+- **FastAPI:** Web framework for backend API.
+- **Pinecone:** Vector storage for efficient retrieval of professor-specific knowledge.
+- **Tavily API:** Web search for up-to-date information.
 - **LangGraph:** Agent workflow orchestration.
 - **Amazon Bedrock:** Language model inference.
 - **AWS Services:** S3, Lambda, DynamoDB for cloud infrastructure.
-- **PyPDF2:** PDF processing.
-- **Streamlit:** Frontend user interface.
+- **PyPDF2:** PDF processing for professor notes and materials.
+- **Streamlit:** User-friendly frontend interface.
 
 ## Setup and Installation
 
@@ -56,7 +59,8 @@ The workflow of these agents is orchestrated using the LangGraph framework.
     ```
 2.  Install dependencies:
 
-    ```pip install -r requirements.txt
+    ```sh
+    pip install -r requirements.txt
 
     ```
 
