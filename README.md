@@ -1,8 +1,18 @@
-# AI-Enhanced Teaching Assistant
-
-## Project Live Link
+# AI-Enhanced Teaching Assistant: Bridging Instructor Knowledge and Web Intelligence
 
 [Click here to view the live project](https://teachingassistant-dv.streamlit.app/)
+
+## Student Side
+
+Student Side | AI-Enhanced Teaching Assistant: Bridging Instructor Knowledge and Web Intelligence
+
+[Watch full Student side demo](https://youtu.be/aDXYTqY8-R4)
+
+## Instructor Side
+
+Instructor Side | AI-Enhanced Teaching Assistant: Bridging Instructor Knowledge and Web Intelligence
+
+[Watch full Instructor side demo](https://youtu.be/aX303VJL-Ew)
 
 ## Project Overview and Goals
 
