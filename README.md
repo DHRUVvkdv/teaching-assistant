@@ -9,7 +9,71 @@ A RAG (Retrieval-Augmented Generation) application using Pinecone for vector sto
 
 # TO-DO:
 
+professor UI
+show previous questions,
+instead of interent say addiotnal sources,
+random questions,
+generate more random questions,
+further reading,
+
 change context for lab
+Implement a feedback loop where the system learns from user interactions
+store user interaction
+
+I am working on the project mentioned below, and have shared the structure of a similar project as well. I want to add agents to my project right now :
+
+1. Add agent that makes the UI as per the request of the user. I have added the image for the same from the different project. I want the following designs and accordingly I need different PROMPT_TEMPLATES for different teachers. Right now I have three teachers: drvinay, lewas, historyoftech. whenver you select one teacher their database is queried. Now I have a COMBINED_PROMPT_TEMPLATE = """
+   You are an AI teaching assistant tasked with providing comprehensive answers using both professor's notes and internet sources. Please analyze the following information and respond to the question. Please answer based on the following context, dont use any external information.:
+
+Professor's Notes:
+{professor_context}
+
+Professor's Sources:
+{professor_sources}
+
+Internet Information:
+{web_context}
+
+Question: {question}
+
+Please provide a detailed answer structured in the following format, dont give any external information apart from the headings:
+
+1. Professor's Notes:
+   [Provide a summary of relevant information from the professor's notes]
+
+2. Professor's Sources:
+   [List only the sources and the links used from the professor's notes.]
+
+3. Internet Notes:
+   [Provide a summary of relevant information from internet sources]
+
+4. Internet Sources:
+   [List only the sources used from internet information.]
+
+5. Extra Sources:
+   [List any sources (with their IDs) that were provided but not directly used in the answer]
+
+Remember to be objective, accurate, and comprehensive in your response. If there are any contradictions between sources, please highlight them. If certain information is not available from either source, please indicate that as well.
+"""
+but I want to make for each teacher customised prompt (jsut changing the text). Also for the UI I am thinking:
+
+1. Professor and web both data but seperate
+2. Professor and web both data summarised into one
+3. jsut professor data
+4. just web data
+5. ask the llm give some MCQ questions with options, the correct answers will be given at the bottom,
+
+lets talk about implemeting this, dont give data if you dont know, ask me and i will provide with more info.
+
+Agents GPT-Newspaper(other similar software has) has:
+
+1. The Search Agent: Our scout, scouring the internet for the latest and most pertinent news.
+2. The Curator Agent: The discerning connoisseur, filtering and selecting news based on the user’s preferences and interests.
+3. The Writer Agent: The team’s wordsmith, crafting engaging, reader-friendly articles.
+4. The Critique Agent: The provider of constructive feedback, ensuring the article’s quality before it gets the green light.
+5. The Designer Agent: Our artist, arranging and designing the articles for a visually delightful reading experience.
+6. The Editor Agent: The conductor, constructing the newspaper based on the crafted articles.
+7. The Publisher Agent: The final touch, publishing the finished product to the frontend or the desired service.
 
 # Pinecone vector DB
 

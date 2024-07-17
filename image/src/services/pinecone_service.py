@@ -238,6 +238,30 @@ def add_processed_file_dynamodb(filename, teacher_name):
         )
 
 
+# def get_google_drive_link_pdf(pdf_name):
+#     try:
+#         response = requests.get(
+#             f"{FILE_ID_SERVICE_URL}/file_id",
+#             params={"file_type": "pdf", "file_name": pdf_name},
+#             timeout=5,
+#         )
+#         response.raise_for_status()
+#         data = response.json()
+#         file_id = data.get("id", "")
+#         if file_id:
+#             return f"https://drive.google.com/file/d/{file_id}/view"
+#         else:
+#             logging.warning(f"No file_id found for {pdf_name}")
+#             return ""
+#     except requests.RequestException as e:
+#         logging.error(f"Failed to fetch Google Drive link for {pdf_name}: {str(e)}")
+#         return ""
+#     except Exception as e:
+#         logging.error(
+#             f"Unexpected error fetching Google Drive link for {pdf_name}: {str(e)}"
+#         )
+#         return ""
+# Temporary fix for drive:
 def get_google_drive_link_pdf(pdf_name):
     try:
         response = requests.get(
@@ -248,19 +272,10 @@ def get_google_drive_link_pdf(pdf_name):
         response.raise_for_status()
         data = response.json()
         file_id = data.get("id", "")
-        if file_id:
-            return f"https://drive.google.com/file/d/{file_id}/view"
-        else:
-            logging.warning(f"No file_id found for {pdf_name}")
-            return ""
-    except requests.RequestException as e:
-        logging.error(f"Failed to fetch Google Drive link for {pdf_name}: {str(e)}")
-        return ""
-    except Exception as e:
-        logging.error(
-            f"Unexpected error fetching Google Drive link for {pdf_name}: {str(e)}"
-        )
-        return ""
+        return f"https://drive.google.com/file/d/{file_id}/view"
+    except Exception:  # This block is no longer needed
+        pass  # Do nothing in this case
+    return "File not present in Google Drive"  # Always return this message
 
 
 def update_missing_drive_links(teacher_name):
