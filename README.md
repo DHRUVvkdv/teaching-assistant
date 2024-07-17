@@ -54,7 +54,7 @@ The workflow of these agents is orchestrated using the LangGraph framework.
 
 1.  Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/ai-teaching-assistant.git
+    git clone https://github.com/DHRUVvkdv/teaching-assistant.git
     cd ai-teaching-assistant
     ```
 2.  Install dependencies:
@@ -102,12 +102,12 @@ The workflow of these agents is orchestrated using the LangGraph framework.
 ```python
 import requests
 
-API_BASE_URL = "http://your-api-base-url.com"
-API_KEY = "your_api_key_here"
+API_BASE_URL = "http://api-base-url.com"
+API_KEY = "api_key_here"
 
 # Submit a query
 query_data = {
-    "query_text": "What is the law of conservation of energy?",
+    "query_text": "How does pressure work in fluids?",
     "teacher_name": "drvinay",
     "target_language": "en"
 }
